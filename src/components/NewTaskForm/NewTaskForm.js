@@ -25,18 +25,18 @@ export default class NewTaskForm extends Component {
   onChangeMin = (e) => {
     this.setState({
       min: e.target.value,
-    })
-  }
+    });
+  };
   onChangeSec = (e) => {
     this.setState({
       sec: e.target.value,
-    })
-  }
+    });
+  };
 
   onSubmit = (event) => {
     const { label, min, sec } = this.state;
     event.preventDefault();
-    const seconds = sec !== '' ? parseInt(sec, 10) : null
+    const seconds = sec !== '' ? parseInt(sec, 10) : null;
     this.props.onItemAdded(label, parseInt(min, 10), seconds);
     this.setState({
       label: '',
@@ -57,7 +57,7 @@ export default class NewTaskForm extends Component {
           value={label}
           autoFocus
         ></input>
-          <input
+        <input
           className="new-todo-form__timer"
           placeholder="Min"
           autoFocus

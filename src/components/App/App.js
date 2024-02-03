@@ -42,7 +42,7 @@ export default class App extends Component {
       const newTimers = { ...prevState.timers, [timerId]: min * 60 + sec };
       return { timers: newTimers };
     });
-  
+
     return {
       label,
       done,

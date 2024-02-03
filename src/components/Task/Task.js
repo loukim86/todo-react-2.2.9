@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Timer from '../Timer/Timer'
+
+import Timer from '../Timer/Timer';
 
 import './Task.css';
 
@@ -80,10 +81,9 @@ export default class Task extends Component {
                 {this.state.label}
               </span>
               <span className="description">
-              <Timer timer={this.props.itemProps.timer} />
-        </span>
+                <Timer timer={this.props.itemProps.timer} />
+              </span>
               <span className="description">{this.props.string}</span>
-             
             </label>
             <button
               className="icon icon-edit"

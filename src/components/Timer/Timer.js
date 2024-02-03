@@ -17,10 +17,7 @@ export default class Timer extends Component {
     }
 
     if (prevState.timerIsOn === false && timerIsOn === true) {
-      this.timer = setInterval(
-        () => this.setState((prevState) => ({ timer: prevState.timer - 1 })),
-        1000
-      );
+      this.timer = setInterval(() => this.setState((prevState) => ({ timer: prevState.timer - 1 })), 1000);
     }
   }
 
