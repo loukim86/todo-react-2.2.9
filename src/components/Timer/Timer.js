@@ -1,61 +1,50 @@
-import React, { Component } from 'react';
+import { React, useState, useEffect, useRef } from 'react';
 
-export default class Timer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      timer: this.props.timer,
-      timerIsOn: false,
-    };
-  }
+function Timer(props) {
+  const [timer, setTimer] = useState(props.timer);
+  const [timerOn, setTimerOn] = useState(false);
+  let timerId = useRef(null);
 
-  componentDidUpdate(prevProps, prevState) {
-    const { timer, timerIsOn } = this.state;
-
-    if (prevState.timer !== 0 && timer === 0) {
-      this.resetTimer();
+  useEffect(() => {
+    if (timer === 0) {
+      resetTimer();
     }
+  }, [timer]);
 
-    if (prevState.timerIsOn === false && timerIsOn === true) {
-      this.timer = setInterval(() => this.setState((prevState) => ({ timer: prevState.timer - 1 })), 1000);
+  useEffect(() => {
+    if (timerOn === true) {
+      timerId.current = setInterval(() => setTimer((prev) => prev - 1), 1000);
     }
-  }
+  }, [timerOn]);
 
-  componentWillUnmount() {
-    this.resetTimer();
-  }
-
-  startTimer = () => {
-    const { timer } = this.state;
-
-    if (timer !== 0) {
-      this.setState({ timer, timerIsOn: true });
-    }
+  const startTimer = () => {
+    setTimer(timer);
+    setTimerOn(true);
+  };
+  const stopTimer = () => {
+    clearInterval(timerId.current);
+    setTimerOn(false);
+  };
+  const resetTimer = () => {
+    clearInterval(timerId.current);
+    setTimer(0);
+    setTimerOn(false);
+  };
+  const addNumberZero = (n) => {
+    return n < 10 ? '0' + n : n;
   };
 
-  stopTimer = () => {
-    clearInterval(this.timer);
-    this.setState({ timerIsOn: false });
-  };
-
-  resetTimer = () => {
-    clearInterval(this.timer);
-    this.setState({ timer: 0, timerIsOn: false });
-  };
-
-  addNumberZero = (n) => (n < 10 ? `0${n}` : n);
-
-  render() {
-    const { timer } = this.state;
-    const minutes = this.addNumberZero(Math.floor(timer / 60));
-    const seconds = this.addNumberZero(timer - minutes * 60);
-
-    return (
-      <>
-        <button className="icon icon-play" onClick={this.startTimer}></button>
-        <button className="icon icon-pause" onClick={this.stopTimer}></button>
-        <span className="description__timer">{`${minutes}:${seconds}`}</span>
-      </>
-    );
-  }
+  const min = addNumberZero(Math.floor(timer / 60));
+  const sec = addNumberZero(timer - min * 60);
+  return (
+    <>
+      <button className="icon icon-play" onClick={startTimer}></button>
+      <button className="icon icon-pause" onClick={stopTimer}></button>
+      <span className="description__timer">
+        {min}:{sec}
+      </span>
+    </>
+  );
 }
+
+export default Timer;

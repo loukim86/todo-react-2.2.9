@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { formatDistance } from 'date-fns';
 
 import './App.css';
@@ -8,40 +7,11 @@ import TaskList from '../TaskList/TaskList';
 import Footer from '../Footer/Footer';
 import NewTaskForm from '../NewTaskForm/NewTaskForm';
 
-export default class App extends Component {
-  static defaultProps = {
-    todoData: [],
-    buttons: [],
-    filter: 'All',
-    edit: false,
-  };
+const App = () => {
+  let maxId = 0;
 
-  static propTypes = {
-    todoData: PropTypes.array.isRequired,
-    buttons: PropTypes.array.isRequired,
-    filter: PropTypes.string.isRequired,
-    edit: PropTypes.bool.isRequired,
-  };
-
-  maxId = 0;
-
-  state = {
-    todoData: [
-      this.createTodoItem('Completed task', new Date(), true),
-      this.createTodoItem('Editing task', new Date()),
-      this.createTodoItem('Active Task', new Date()),
-    ],
-    buttons: ['All', 'Active', 'Completed'],
-    filter: 'All',
-    edit: false,
-  };
-
-  createTodoItem(label, timeStamp, min = 0, sec = 0, done = false) {
-    const timerId = this.maxId++;
-    this.setState((prevState) => {
-      const newTimers = { ...prevState.timers, [timerId]: min * 60 + sec };
-      return { timers: newTimers };
-    });
+  const createTodoItem = (label, timeStamp, min = 0, sec = 0, done = false) => {
+    const timerId = maxId++;
 
     return {
       label,
@@ -49,54 +19,41 @@ export default class App extends Component {
       edit: false,
       id: timerId,
       timeStamp,
-      string: this.formatDistanceToNow(timeStamp),
+      string: formatDistance(new Date(), timeStamp, { addSuffix: true }),
       timer: min * 60 + sec,
     };
-  }
-
-  formatDistanceToNow(timeStamp) {
-    return formatDistance(new Date(), timeStamp, {
-      addSuffix: true,
-    });
-  }
-
-  addItem = (text, min, sec) => {
-    const newItem = this.createTodoItem(text, new Date(), min, sec);
-    this.setState(({ todoData }) => {
-      const newArray = [...todoData, newItem];
-      return { todoData: newArray };
-    });
   };
 
-  deleteItem = (id) => {
-    this.setState(({ todoData }) => {
-      const idx = todoData.findIndex((el) => el.id === id);
-      const newArray = [...todoData.slice(0, idx), ...todoData.slice(idx + 1)];
-      return { todoData: newArray };
-    });
+  const [todoData, setTodoData] = useState([
+    createTodoItem('Completed task', new Date(), true),
+    createTodoItem('Editing task', new Date()),
+    createTodoItem('Active Task', new Date()),
+  ]);
+  const buttons = ['All', 'Active', 'Completed'];
+  const [filter, setFilter] = useState('All');
+
+  const addItem = (text, min, sec) => {
+    const newItem = createTodoItem(text, new Date(), min, sec);
+    setTodoData((prevData) => [...prevData, newItem]);
   };
 
-  clearCompleted = () => {
-    this.state.todoData.forEach((item) => {
-      if (item.done) {
-        this.deleteItem(item.id);
-      }
-    });
+  const deleteItem = (id) => {
+    setTodoData((prevData) => prevData.filter((el) => el.id !== id));
   };
 
-  editItem = (id, label) => {
-    this.setState(({ todoData }) => {
-      return {
-        todoData: this.toggleProperty(todoData, id, 'edit', label),
-      };
-    });
+  const clearCompleted = () => {
+    setTodoData((prevData) => prevData.filter((item) => !item.done));
   };
 
-  toggleProperty(arr, id, propName, label) {
+  const editItem = (id, label) => {
+    setTodoData((prevData) => prevData.map((item) => (item.id === id ? { ...item, edit: !item.edit, label } : item)));
+  };
+
+  const toggleProperty = (arr, id, propName, label) => {
     const idx = arr.findIndex((el) => el.id === id);
 
     if (!label) {
-      label = this.state.todoData[idx].label;
+      label = arr[idx].label;
     }
 
     const oldItem = arr[idx];
@@ -108,48 +65,43 @@ export default class App extends Component {
     };
 
     return [...arr.slice(0, idx), newItem, ...arr.slice(idx + 1)];
-  }
-
-  onToggleDone = (id) => {
-    this.setState(({ todoData }) => {
-      return {
-        todoData: this.toggleProperty(todoData, id, 'done'),
-      };
-    });
   };
 
-  onToggleFilter = (i, text) => {
-    this.setState({ filter: text });
+  const onToggleDone = (id) => {
+    setTodoData((prevData) => toggleProperty(prevData, id, 'done'));
   };
 
-  render() {
-    const { todoData } = this.state;
-    const doneCount = todoData.filter((el) => el.done).length;
-    const todoCount = todoData.length - doneCount;
+  const onToggleFilter = (i, text) => {
+    setFilter(text);
+  };
 
-    return (
-      <section className="todoapp">
-        <header className="header">
-          <h1>todos</h1>
-          <NewTaskForm onItemAdded={this.addItem} />
-        </header>
-        <section className="main">
-          <TaskList
-            todos={todoData}
-            onDeleted={this.deleteItem}
-            onEdit={this.editItem}
-            onToggleDone={this.onToggleDone}
-            filter={this.state.filter}
-          />
-          <Footer
-            toDo={todoCount}
-            onToggleFilter={this.onToggleFilter}
-            clearCompleted={this.clearCompleted}
-            buttons={this.state.buttons}
-            filter={this.state.filter}
-          />
-        </section>
+  const doneCount = todoData.filter((el) => el.done).length;
+  const todoCount = todoData.length - doneCount;
+
+  return (
+    <section className="todoapp">
+      <header className="header">
+        <h1>todos</h1>
+        <NewTaskForm onItemAdded={addItem} />
+      </header>
+      <section className="main">
+        <TaskList
+          todos={todoData}
+          onDeleted={deleteItem}
+          onEdit={editItem}
+          onToggleDone={onToggleDone}
+          filter={filter}
+        />
+        <Footer
+          toDo={todoCount}
+          onToggleFilter={onToggleFilter}
+          clearCompleted={clearCompleted}
+          buttons={buttons}
+          filter={filter}
+        />
       </section>
-    );
-  }
-}
+    </section>
+  );
+};
+
+export default App;

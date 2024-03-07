@@ -5,49 +5,36 @@ import Task from '../Task/Task';
 
 import './TaskList.css';
 
-const TaskList = (props) => {
-  const { todos, onDeleted, onEdit, onToggleDone, filter } = props;
+const TaskList = ({ todos, onDeleted, onEdit, onToggleDone, filter }) => {
+  const filteredTodos = filterTodos(todos, filter);
 
-  const elements = todos.map((item) => {
-    const { id, ...itemProps } = item;
+  return (
+    <ul className="todo-list">
+      {filteredTodos.map((todo, index) => (
+        <Task
+          key={index}
+          done={todo.done}
+          id={todo.id}
+          onToggleDone={() => onToggleDone(todo.id)}
+          onDeleted={() => onDeleted(todo.id)}
+          onEdit={onEdit}
+          string={todo.string}
+          itemProps={todo}
+        />
+      ))}
+    </ul>
+  );
+};
 
-    return (
-      <Task
-        {...item}
-        key={id}
-        id={id}
-        onDeleted={() => onDeleted(id)}
-        onEdit={onEdit}
-        onToggleDone={() => onToggleDone(id)}
-        done={item.done}
-        itemProps={itemProps}
-      />
-    );
-  });
-
-  const elementsDone = elements.filter((element) => {
-    if (element) {
-      return element.props.done;
-    }
-  });
-
-  const elementsActive = elements.filter((element) => {
-    if (element) {
-      return !element.props.done;
-    }
-  });
-
-  let arrayFiltetered;
-
-  if (filter === 'Completed') {
-    arrayFiltetered = elementsDone;
-  } else if (filter === 'Active') {
-    arrayFiltetered = elementsActive;
-  } else {
-    arrayFiltetered = elements;
+const filterTodos = (todos, filter) => {
+  switch (filter) {
+    case 'Active':
+      return todos.filter((todo) => !todo.done);
+    case 'Completed':
+      return todos.filter((todo) => todo.done);
+    default:
+      return todos;
   }
-
-  return <ul className="todo-list">{arrayFiltetered}</ul>;
 };
 
 TaskList.defaultProps = {
